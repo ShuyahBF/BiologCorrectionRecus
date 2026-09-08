@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Application de bureau WinForms classique (fenêtre + boucle de messages Windows) -->
+    <OutputType>WinExe</OutputType>
+    <!-- .NET 8 avec les API Windows (WinForms) : nécessite Windows pour compiler/exécuter -->
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>BiologCorrectionRecus</RootNamespace>
+    <AssemblyName>BiologCorrectionRecus</AssemblyName>
+    <ApplicationIcon />
+    <!-- Permet à System.Data.OleDb de fonctionner correctement (Windows uniquement) -->
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Accès à la base HFSQL via un pilote OLEDB (fourni par PCSoft / HFSQL) -->
+    <PackageReference Include="System.Data.OleDb" Version="8.0.0" />
+    <!-- Génération de PDF en pur .NET (fonctionne aussi hors Windows, pas de dépendance GDI+) -->
+    <PackageReference Include="PdfSharpCore" Version="1.3.65" />
+  </ItemGroup>
+
+</Project>

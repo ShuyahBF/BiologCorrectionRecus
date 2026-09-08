@@ -1,0 +1,12 @@
+## Dossiers de build .NET / Visual Studio
+[Bb]in/
+[Oo]bj/
+.vs/
+
+## Fichiers utilisateur Visual Studio (paramètres locaux, ne pas versionner)
+*.user
+*.suo
+
+## Fichiers temporaires générés lors des tests de génération de PDF
+*.tmp
+*.pdf.bak
