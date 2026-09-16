@@ -21,6 +21,7 @@ partial class LoginForm
     private Panel panelCote = null!;
     private Label lblBienvenue = null!;
     private Label lblBienvenueSousTitre = null!;
+    private Label lblResumeConnexion = null!;
     private Label lblParametres = null!;
     private Panel panelFormulaire = null!;
     private Label lblEnTeteFormulaire = null!;
@@ -39,6 +40,7 @@ partial class LoginForm
         panelCote = new Panel();
         lblBienvenueSousTitre = new Label();
         lblBienvenue = new Label();
+        lblResumeConnexion = new Label();
         lblParametres = new Label();
         panelFormulaire = new Panel();
         lblMessage = new Label();
@@ -84,6 +86,7 @@ partial class LoginForm
         // discret aux paramètres du logiciel (nom du logiciel, emplacement du fichier .ini).
         panelCote.BackColor = Color.FromArgb(31, 42, 68);
         panelCote.Controls.Add(lblParametres);
+        panelCote.Controls.Add(lblResumeConnexion);
         panelCote.Controls.Add(lblBienvenueSousTitre);
         panelCote.Controls.Add(lblBienvenue);
         panelCote.Dock = DockStyle.Left;
@@ -101,6 +104,15 @@ partial class LoginForm
         lblBienvenue.ForeColor = Color.White;
         lblBienvenue.Location = new Point(37, 165);
         lblBienvenue.Text = "Biolog";
+
+        // lblResumeConnexion : rappel "serveur[:port] · base" juste au-dessus du lien
+        // "Paramètres du logiciel", pour voir en un coup d'œil à quoi l'appli est connectée
+        // (rempli dynamiquement dans LoginForm.cs, voir AppConfig.ResumeConnexion).
+        lblResumeConnexion.AutoSize = true;
+        lblResumeConnexion.Font = new Font("Segoe UI", 8.5F);
+        lblResumeConnexion.ForeColor = Color.FromArgb(140, 152, 176);
+        lblResumeConnexion.Location = new Point(40, 430);
+        lblResumeConnexion.Text = "";
 
         // lblParametres : discret, en bas du bandeau, réservé à l'administrateur (nom du
         // logiciel + emplacement du fichier .ini — voir FormParametresLogiciel).

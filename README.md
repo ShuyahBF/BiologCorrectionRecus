@@ -55,9 +55,14 @@ La configuration se fait en **deux étages** :
 2. **Le fichier `.ini` du logiciel** (ex : `C:\BOOT_Biolog\Biolog.ini`),
    propre à chaque poste et modifiable par un administrateur — c'est lui
    qui donne la vraie ressource à utiliser. Convention reprise de vos
-   autres logiciels (Aizenta, eKol...) : le nom de la base HFSQL est lu
-   dans la section `[Serveur]`, clé `Nom`. Quand ce fichier est
-   accessible, sa valeur remplace celle d'`appsettings.json`.
+   autres logiciels (Aizenta, eKol...), dans la section `[Serveur]` :
+   - clé **`Nom`** → adresse du serveur HFSQL, avec port optionnel
+     (ex : `XRVEUR` ou `XRVEUR:4900` — s'il y a `:` suivi d'un nombre,
+     c'est le port) ;
+   - clé **`NomBaseDonnées`** → nom de la base HFSQL à ouvrir sur ce
+     serveur.
+   Quand ce fichier est accessible, ses valeurs remplacent celles
+   d'`appsettings.json`.
 
 Fonctionnement :
 
@@ -71,6 +76,9 @@ Fonctionnement :
   `UtilisateurBlg`), un champ mot de passe, limite à 3 tentatives, et
   affiche l'éventuelle erreur de lecture du `.ini` (fichier introuvable,
   clé absente...).
+- Juste au-dessus du lien "Paramètres du logiciel", un petit résumé
+  **"serveur[:port] · base"** (`AppConfig.ResumeConnexion`) montre en un
+  coup d'œil à quoi l'application est actuellement connectée.
 - Un lien discret **"⚙ Paramètres du logiciel"** en bas de l'écran de
   connexion ouvre `FormParametresLogiciel` : un administrateur y modifie
   le **nom du logiciel** et l'**emplacement du fichier `.ini`**. À
@@ -91,11 +99,11 @@ uniquement la table des utilisateurs, la valeur par défaut de
 `Logiciel.Nom`/`Logiciel.CheminFichierIni`, et l'écran affiché après
 connexion.
 
-⚠️ Seule la clé `[Serveur] Nom` (→ nom de la base) est câblée pour
-l'instant, car c'est la seule confirmée. Si votre fichier `.ini` expose
-d'autres paramètres à reprendre (adresse du serveur, port...), indiquez-
-moi leurs noms exacts de section/clé et j'étendrai
-`AppConfig.ChargerDepuisFichierIni()` de la même façon.
+⚠️ Seules les clés `[Serveur] Nom` (serveur + port) et
+`[Serveur] NomBaseDonnées` (base) sont câblées pour l'instant, car ce
+sont les seules confirmées. Si votre fichier `.ini` expose d'autres
+paramètres à reprendre, indiquez-moi leurs noms exacts de section/clé et
+j'étendrai `AppConfig.ChargerDepuisFichierIni()` de la même façon.
 
 ## Avant de lancer : vérifier 3 hypothèses techniques
 

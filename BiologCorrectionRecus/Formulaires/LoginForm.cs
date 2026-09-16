@@ -35,6 +35,7 @@ public partial class LoginForm : Form
         // changeant que ce paramètre (voir FormParametresLogiciel).
         lblBienvenue.Text = AppConfig.NomLogiciel;
         Text = $"{AppConfig.NomLogiciel} — Connexion";
+        AfficherResumeConnexion();
 
         if (!string.IsNullOrEmpty(AppConfig.DerniereErreurIni))
         {
@@ -43,6 +44,13 @@ public partial class LoginForm : Form
 
         ChargerListeUtilisateurs();
     }
+
+    /// <summary>
+    /// Affiche "serveur[:port] · base" à côté du lien "Paramètres du logiciel", pour voir en un
+    /// coup d'œil à quel serveur/base HFSQL l'application est actuellement connectée
+    /// (résolu par AppConfig depuis appsettings.json puis le fichier .ini, voir AppConfig.cs).
+    /// </summary>
+    private void AfficherResumeConnexion() => lblResumeConnexion.Text = AppConfig.ResumeConnexion;
 
     private void ChargerListeUtilisateurs()
     {
@@ -146,6 +154,9 @@ public partial class LoginForm : Form
         using var formulaireParametres = new FormParametresLogiciel();
         if (formulaireParametres.ShowDialog(this) == DialogResult.OK)
         {
+            lblBienvenue.Text = AppConfig.NomLogiciel;
+            Text = $"{AppConfig.NomLogiciel} — Connexion";
+            AfficherResumeConnexion();
             AfficherMessage(string.Empty);
             ChargerListeUtilisateurs();
         }

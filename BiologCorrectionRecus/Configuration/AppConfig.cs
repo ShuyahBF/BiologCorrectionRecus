@@ -19,8 +19,11 @@ namespace BiologCorrectionRecus.Configuration
     ///    logiciel et l'emplacement du fichier d'initialisation (.ini) de ce logiciel.
     /// 2. <b>Le fichier .ini du logiciel</b> (ex : C:\BOOT_Biolog\Biolog.ini), propre à chaque
     ///    poste/installation et modifiable par un administrateur : c'est lui qui donne la vraie
-    ///    ressource à utiliser (section "Serveur", clé "Nom" -> nom de la base HFSQL). Ses
-    ///    valeurs, quand présentes, remplacent celles d'appsettings.json.
+    ///    ressource à utiliser, dans la section [Serveur] :
+    ///    - clé "Nom" -> adresse du serveur HFSQL, éventuellement suivie de ":port"
+    ///      (ex : "XRVEUR" ou "XRVEUR:4900" — s'il y a ":" suivi d'un nombre, c'est le port) ;
+    ///    - clé "NomBaseDonnées" -> nom de la base HFSQL à ouvrir sur ce serveur.
+    ///    Ses valeurs, quand présentes, remplacent celles d'appsettings.json.
     ///
     /// C'est cette classe (et non plus Config.cs) qui porte désormais la connexion HFSQL ;
     /// Config.cs ne garde que les constantes métier propres à Biolog (tables des reçus,
@@ -30,6 +33,14 @@ namespace BiologCorrectionRecus.Configuration
     {
         // ----- Paramètres de connexion au serveur HFSQL -----
         public static string ServeurHFSQL { get; set; } = "localhost";
+
+        /// <summary>
+        /// Port du serveur HFSQL, s'il est connu (ex : 4900). Peut venir d'appsettings.json ou
+        /// être extrait de la clé [Serveur] "Nom" du fichier .ini si elle est écrite sous la
+        /// forme "Adresse:Port" (ex : "XRVEUR:4900"). Null si non renseigné.
+        /// </summary>
+        public static int? PortHFSQL { get; set; }
+
         public static string NomBaseDeDonnees { get; set; } = "Biolog";
 
         // Nom exact du provider OLEDB HFSQL installé sur le poste (fourni par PCSoft avec
@@ -68,13 +79,24 @@ namespace BiologCorrectionRecus.Configuration
         /// Chaîne de connexion OLEDB construite à partir des paramètres ci-dessus. Utilisée par
         /// Data/HfsqlConnectionManager.cs pour toutes les connexions au serveur HFSQL
         /// (authentification comme accès aux données métier des reçus).
+        /// Le port (quand connu) est ajouté après le serveur sous la forme "Serveur:Port" dans
+        /// "Data Source" — à ajuster si le pilote OLEDB HFSQL attend une autre syntaxe (ex : un
+        /// paramètre "Server Port=" séparé), non confirmée pour l'instant.
         /// </summary>
         public static string ChaineConnexion =>
             $"Provider={NomProviderOleDb};" +
-            $"Data Source={ServeurHFSQL};" +
+            $"Data Source={ServeurHFSQL}{(PortHFSQL.HasValue ? ":" + PortHFSQL.Value : string.Empty)};" +
             $"Location={NomBaseDeDonnees};" +
             $"User ID={UtilisateurConnexion};" +
             $"Password={MotDePasseConnexion};";
+
+        /// <summary>
+        /// Résumé lisible "serveur[:port] · base" affiché à côté du lien "Paramètres du
+        /// logiciel" sur l'écran de connexion, pour qu'on voie en un coup d'œil vers quel
+        /// serveur/base l'application est actuellement configurée.
+        /// </summary>
+        public static string ResumeConnexion =>
+            $"{ServeurHFSQL}{(PortHFSQL.HasValue ? ":" + PortHFSQL.Value : string.Empty)} · {NomBaseDeDonnees}";
 
         /// <summary>
         /// Charge la configuration : d'abord appsettings.json (paramètres par défaut + emplacement
@@ -104,6 +126,8 @@ namespace BiologCorrectionRecus.Configuration
                 if (racine.TryGetProperty("HFSQL", out JsonElement hfsql))
                 {
                     ServeurHFSQL = LireTexte(hfsql, "ServeurHFSQL", ServeurHFSQL);
+                    if (hfsql.TryGetProperty("PortHFSQL", out JsonElement portElement) && portElement.TryGetInt32(out int port))
+                        PortHFSQL = port;
                     NomBaseDeDonnees = LireTexte(hfsql, "NomBaseDeDonnees", NomBaseDeDonnees);
                     NomProviderOleDb = LireTexte(hfsql, "NomProviderOleDb", NomProviderOleDb);
                     UtilisateurConnexion = LireTexte(hfsql, "UtilisateurConnexion", UtilisateurConnexion);
@@ -134,9 +158,12 @@ namespace BiologCorrectionRecus.Configuration
         }
 
         /// <summary>
-        /// Relit le fichier .ini du logiciel (CheminFichierIni) et en extrait le nom de la base
-        /// HFSQL à utiliser (section "Serveur", clé "Nom" — voir la convention Aizenta/Biolog/eKol).
-        /// Public pour pouvoir être rappelée juste après que l'administrateur a changé
+        /// Relit le fichier .ini du logiciel (CheminFichierIni) et en extrait, dans la section
+        /// [Serveur] :
+        /// - clé "Nom" -> adresse du serveur HFSQL, avec port optionnel ("Adresse:Port") ;
+        /// - clé "NomBaseDonnées" -> nom de la base HFSQL à utiliser.
+        /// Convention observée sur vos autres logiciels (Aizenta, eKol, ...). Public pour
+        /// pouvoir être rappelée juste après que l'administrateur a changé
         /// NomLogiciel/CheminFichierIni dans FormParametresLogiciel.
         /// </summary>
         public static void ChargerDepuisFichierIni()
@@ -154,18 +181,34 @@ namespace BiologCorrectionRecus.Configuration
                     return;
                 }
 
-                // Convention observée sur vos autres logiciels (Aizenta, eKol, ...) : le nom de
-                // la base HFSQL est écrit dans la section [Serveur], clé "Nom". Si votre fichier
-                // .ini expose d'autres paramètres (adresse du serveur, port...) sous d'autres
-                // clés, ajoutez-les ici de la même façon une fois leurs noms exacts confirmés.
-                string? nomBase = IniFileReader.LireValeur(CheminFichierIni, "Serveur", "Nom");
+                // "Nom" contient l'adresse du serveur, éventuellement suivie de ":port"
+                // (ex : "XRVEUR" ou "XRVEUR:4900"). On ne coupe sur ":" que si ce qui suit est
+                // bien un nombre, pour ne pas casser une adresse IPv6 ou un nom contenant ":".
+                string? adresseServeur = IniFileReader.LireValeur(CheminFichierIni, "Serveur", "Nom");
+                if (!string.IsNullOrWhiteSpace(adresseServeur))
+                {
+                    int indexDeuxPoints = adresseServeur.LastIndexOf(':');
+                    if (indexDeuxPoints > 0 && int.TryParse(adresseServeur[(indexDeuxPoints + 1)..], out int port))
+                    {
+                        ServeurHFSQL = adresseServeur[..indexDeuxPoints];
+                        PortHFSQL = port;
+                    }
+                    else
+                    {
+                        ServeurHFSQL = adresseServeur;
+                    }
+                }
+
+                // "NomBaseDonnées" contient le nom de la base à ouvrir sur ce serveur : c'est la
+                // valeur essentielle, celle qui change réellement d'un poste à l'autre.
+                string? nomBase = IniFileReader.LireValeur(CheminFichierIni, "Serveur", "NomBaseDonnées");
                 if (!string.IsNullOrWhiteSpace(nomBase))
                 {
                     NomBaseDeDonnees = nomBase;
                 }
                 else
                 {
-                    DerniereErreurIni = $"Clé \"Nom\" absente de la section [Serveur] dans {CheminFichierIni}";
+                    DerniereErreurIni = $"Clé \"NomBaseDonnées\" absente de la section [Serveur] dans {CheminFichierIni}";
                 }
             }
             catch (Exception ex)
@@ -190,6 +233,7 @@ namespace BiologCorrectionRecus.Configuration
                 HFSQL = new
                 {
                     ServeurHFSQL,
+                    PortHFSQL,
                     NomBaseDeDonnees,
                     NomProviderOleDb,
                     UtilisateurConnexion,
