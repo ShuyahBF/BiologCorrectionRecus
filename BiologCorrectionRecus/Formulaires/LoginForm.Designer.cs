@@ -21,6 +21,7 @@ partial class LoginForm
     private Panel panelCote = null!;
     private Label lblBienvenue = null!;
     private Label lblBienvenueSousTitre = null!;
+    private Label lblParametres = null!;
     private Panel panelFormulaire = null!;
     private Label lblEnTeteFormulaire = null!;
     private Label lblUtilisateur = null!;
@@ -38,6 +39,7 @@ partial class LoginForm
         panelCote = new Panel();
         lblBienvenueSousTitre = new Label();
         lblBienvenue = new Label();
+        lblParametres = new Label();
         panelFormulaire = new Panel();
         lblMessage = new Label();
         btnConnexion = new Button();
@@ -78,8 +80,10 @@ partial class LoginForm
         lblTitreBarre.Location = new Point(16, 9);
         lblTitreBarre.Text = "Connexion";
 
-        // panelCote : bandeau latéral gauche, purement visuel (message de bienvenue).
+        // panelCote : bandeau latéral gauche, purement visuel (message de bienvenue) + accès
+        // discret aux paramètres du logiciel (nom du logiciel, emplacement du fichier .ini).
         panelCote.BackColor = Color.FromArgb(31, 42, 68);
+        panelCote.Controls.Add(lblParametres);
         panelCote.Controls.Add(lblBienvenueSousTitre);
         panelCote.Controls.Add(lblBienvenue);
         panelCote.Dock = DockStyle.Left;
@@ -97,6 +101,16 @@ partial class LoginForm
         lblBienvenue.ForeColor = Color.White;
         lblBienvenue.Location = new Point(37, 165);
         lblBienvenue.Text = "Biolog";
+
+        // lblParametres : discret, en bas du bandeau, réservé à l'administrateur (nom du
+        // logiciel + emplacement du fichier .ini — voir FormParametresLogiciel).
+        lblParametres.AutoSize = true;
+        lblParametres.Cursor = Cursors.Hand;
+        lblParametres.Font = new Font("Segoe UI", 8.5F);
+        lblParametres.ForeColor = Color.FromArgb(140, 152, 176);
+        lblParametres.Location = new Point(40, 450);
+        lblParametres.Text = "⚙ Paramètres du logiciel";
+        lblParametres.Click += LblParametres_Click;
 
         // panelFormulaire : la partie droite, avec les vrais champs de connexion.
         panelFormulaire.BackColor = Color.White;

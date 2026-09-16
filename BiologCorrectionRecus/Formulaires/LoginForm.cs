@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using BiologCorrectionRecus.Configuration;
 using BiologCorrectionRecus.Data;
 using BiologCorrectionRecus.Modeles;
 
@@ -29,6 +30,17 @@ public partial class LoginForm : Form
 
     private void LoginForm_Load(object? sender, EventArgs e)
     {
+        // Le nom affiché ("Biolog" par défaut) suit désormais AppConfig.NomLogiciel : le même
+        // écran de connexion peut ainsi être réutilisé tel quel pour Aizenta, eKol, etc. en ne
+        // changeant que ce paramètre (voir FormParametresLogiciel).
+        lblBienvenue.Text = AppConfig.NomLogiciel;
+        Text = $"{AppConfig.NomLogiciel} — Connexion";
+
+        if (!string.IsNullOrEmpty(AppConfig.DerniereErreurIni))
+        {
+            AfficherMessage(AppConfig.DerniereErreurIni);
+        }
+
         ChargerListeUtilisateurs();
     }
 
@@ -123,6 +135,21 @@ public partial class LoginForm : Form
     }
 
     private void LblFermer_Click(object? sender, EventArgs e) => Close();
+
+    /// <summary>
+    /// Ouvre la fenêtre d'administration (nom du logiciel + emplacement de son fichier .ini).
+    /// Si l'administrateur enregistre une modification, on relit aussitôt la liste des
+    /// utilisateurs : elle pointera alors vers la base HFSQL indiquée dans le nouveau .ini.
+    /// </summary>
+    private void LblParametres_Click(object? sender, EventArgs e)
+    {
+        using var formulaireParametres = new FormParametresLogiciel();
+        if (formulaireParametres.ShowDialog(this) == DialogResult.OK)
+        {
+            AfficherMessage(string.Empty);
+            ChargerListeUtilisateurs();
+        }
+    }
 
     // ----- Déplacement de la fenêtre (FormBorderStyle = None) via la barre de titre personnalisée -----
     // Windows ne sait pas déplacer une fenêtre sans bordure au glisser-déposer : on simule un
