@@ -1,46 +1,21 @@
 namespace BiologCorrectionRecus;
 
 /// <summary>
-/// Tous les paramètres "à ajuster selon votre installation" sont centralisés ici.
-/// Objectif : ne jamais avoir à modifier le code métier pour changer un nom de
-/// serveur, de base ou de table — on ne touche qu'à cette classe.
+/// Paramètres métier propres à Biolog (tables et colonnes des reçus, règles PEDIAT), à
+/// ajuster selon votre installation.
+///
+/// La connexion au serveur HFSQL (serveur, base, provider OLEDB, identifiants) ainsi que la
+/// table des utilisateurs ne vivent plus ici : elles sont désormais dans
+/// <see cref="BiologCorrectionRecus.Configuration.AppConfig"/> (chargée depuis appsettings.json), pour
+/// rester la même dans tous les projets Biolog qui se connectent à HFSQL — voir
+/// Configuration/AppConfig.cs et Data/HfsqlConnectionManager.cs.
 /// </summary>
 internal static class Config
 {
     // ------------------------------------------------------------------
-    // 1) Connexion HFSQL (via le pilote OLEDB fourni par PCSoft)
-    // ------------------------------------------------------------------
-
-    /// <summary>Nom ou adresse IP du serveur HFSQL (moteur client/serveur), ex: "localhost" ou "192.168.1.10".</summary>
-    public const string HfsqlServeur = "localhost";
-
-    /// <summary>Nom de la base HFSQL. À VÉRIFIER en priorité (hypothèse 4 du README).</summary>
-    public const string HfsqlBase = "Biolog";
-
-    /// <summary>Identifiant de connexion HFSQL (compte technique, pas celui d'un utilisateur de l'appli).</summary>
-    public const string HfsqlUtilisateur = "admin";
-
-    /// <summary>Mot de passe du compte HFSQL ci-dessus.</summary>
-    public const string HfsqlMotDePasse = "";
-
-    /// <summary>
-    /// Nom du "Provider" OLEDB à utiliser. C'est la valeur la plus susceptible de varier
-    /// selon la version du pilote HFSQL installée sur le poste (32/64 bits, version du moteur).
-    /// Valeurs courantes à essayer si la connexion échoue : "HFSQLOLEDB", "PCSoft.HFSQL.1".
-    /// Voir Data/HfsqlConnexion.cs pour la construction complète de la chaîne de connexion.
-    /// </summary>
-    public const string HfsqlProviderOleDb = "HFSQLOLEDB";
-
-    // ------------------------------------------------------------------
-    // 2) Noms des tables / colonnes HFSQL utilisées par l'application
+    // 1) Noms des tables / colonnes HFSQL utilisées par l'application
     //    (regroupés ici pour être faciles à corriger si le schéma réel diffère)
     // ------------------------------------------------------------------
-
-    public const string TableUtilisateurs = "UtilisateurBlg";
-    public const string ColUtilisateurId = "IDUtilisateur";
-    public const string ColUtilisateurLogin = "Login";
-    public const string ColUtilisateurMotDePasse = "MotDePasse";
-    public const string ColUtilisateurNomComplet = "NomComplet";
 
     public const string TableVentes = "VenteClinique";
     public const string ColVenteId = "IDVente";
@@ -64,7 +39,7 @@ internal static class Config
     public const string ColMedecinPrenom = "PrénomMédecin";
 
     // ------------------------------------------------------------------
-    // 3) Règles métier
+    // 2) Règles métier
     // ------------------------------------------------------------------
 
     /// <summary>Préfixe/motif identifiant une ligne "pédiatrie" à corriger dans CodeArticle ou Désignation.</summary>

@@ -18,7 +18,8 @@ internal static class RepositoryRecus
             nombre = Config.NombreRecusAffiches;
         }
 
-        using var connexion = HfsqlConnexion.OuvrirConnexion();
+        using var connexion = HfsqlConnectionManager.CreerConnexion();
+        connexion.Open();
 
         // "SELECT TOP n" est la syntaxe la plus répandue côté HFSQL/Access ;
         // si le pilote la refuse, se replier sur un tri + limite côté C# (moins efficace
@@ -53,7 +54,8 @@ internal static class RepositoryRecus
     /// </summary>
     public static List<LigneRecu> ObtenirLignesDuRecu(int idVente)
     {
-        using var connexion = HfsqlConnexion.OuvrirConnexion();
+        using var connexion = HfsqlConnectionManager.CreerConnexion();
+        connexion.Open();
 
         var texteRequete =
             $"SELECT l.{Config.ColLigneId}, l.{Config.ColLigneVenteId}, l.{Config.ColLigneCodeArticle}, " +
@@ -91,7 +93,8 @@ internal static class RepositoryRecus
     /// <summary>Renvoie le contenu PDF d'un reçu : la version corrigée si elle existe, sinon l'originale.</summary>
     public static byte[]? ObtenirPdfRecu(int idVente, bool preferCorrige = true)
     {
-        using var connexion = HfsqlConnexion.OuvrirConnexion();
+        using var connexion = HfsqlConnectionManager.CreerConnexion();
+        connexion.Open();
 
         var texteRequete =
             $"SELECT {Config.ColVentePdfOriginal}, {Config.ColVentePdfCorrige} " +
@@ -121,7 +124,8 @@ internal static class RepositoryRecus
     /// </summary>
     public static bool EnregistrerPdfCorrige(int idVente, byte[] pdfCorrige)
     {
-        using var connexion = HfsqlConnexion.OuvrirConnexion();
+        using var connexion = HfsqlConnectionManager.CreerConnexion();
+        connexion.Open();
 
         var texteRequete =
             $"UPDATE {Config.TableVentes} " +

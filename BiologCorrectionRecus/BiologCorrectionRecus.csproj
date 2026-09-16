@@ -22,4 +22,12 @@
     <PackageReference Include="PdfSharpCore" Version="1.3.65" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- appsettings.json (paramètres de connexion HFSQL) doit être copié à côté de l'exécutable
+         pour être lu au démarrage par Configuration/AppConfig.cs. -->
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
